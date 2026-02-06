@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Java Concurrency Mastery</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&family=DM+Serif+Display:ital@0;1&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--b0:#08080d;--b1:#0e0e16;--b2:#15151f;--b3:#1b1b27;--bd:#252535;--bd2:#383850;--t1:#e2e2ed;--t2:#9292ab;--tm:#52526a;--cy:#00d4ff;--cyD:#00d4ff1e;--or:#ff8a3a;--orD:#ff8a3a1a;--gn:#3aff8a;--gnD:#3aff8a14;--pu:#a78bfa;--puD:#a78bfa16;--rd:#ff4a6a;--rdD:#ff4a6a14;--yl:#ffd43a;--ylD:#ffd43a14;--cB:#0a0a11;--cD:#191928;--ff:'DM Serif Display',Georgia,serif;--fb:'Instrument Sans',sans-serif;--fm:'JetBrains Mono',monospace}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{background:var(--b0);color:var(--t1);font-family:var(--fb);line-height:1.7;-webkit-font-smoothing:antialiased}
+::selection{background:var(--cy);color:var(--b0)}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--b0)}::-webkit-scrollbar-thumb{background:var(--bd);border-radius:3px}
+.shell{display:grid;grid-template-columns:264px 1fr;min-height:100vh}
+.side{position:fixed;top:0;left:0;width:264px;height:100vh;background:var(--b1);border-right:1px solid var(--bd);overflow-y:auto;z-index:100;display:flex;flex-direction:column}
+.side-hd{padding:20px 16px 14px;border-bottom:1px solid var(--bd)}
+.side-hd h1{font-family:var(--ff);font-size:18px;color:var(--cy);line-height:1.25}
+.side-hd .sub{font-family:var(--fm);font-size:9px;color:var(--tm);text-transform:uppercase;letter-spacing:.16em;margin-top:5px}
+.sbox{padding:10px;border-bottom:1px solid var(--bd)}
+.sbox input{width:100%;padding:7px 10px;background:var(--b2);border:1px solid var(--bd);border-radius:5px;color:var(--t1);font-family:var(--fm);font-size:11px;outline:none;transition:border .2s}
+.sbox input:focus{border-color:var(--cy)}.sbox input::placeholder{color:var(--tm)}
+.ns{padding:12px 8px 4px}
+.nst{font-family:var(--fm);font-size:8.5px;font-weight:600;text-transform:uppercase;letter-spacing:.17em;color:var(--tm);padding:0 8px 6px}
+.ni{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:5px;cursor:pointer;transition:all .15s;font-size:12px;color:var(--t2);text-decoration:none;line-height:1.4}
+.ni:hover{background:var(--b2);color:var(--t1)}.ni.act{background:var(--cyD);color:var(--cy)}
+.ni .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0}
+.ni .num{font-family:var(--fm);font-size:9px;color:var(--tm);min-width:18px}
+.side-ft{padding:12px 16px;border-top:1px solid var(--bd);margin-top:auto}
+.pb{width:100%;height:3px;background:var(--bd);border-radius:2px;overflow:hidden;margin-bottom:5px}
+.pfl{height:100%;background:linear-gradient(90deg,var(--cy),var(--pu));border-radius:2px;transition:width .5s}
+.ptx{font-family:var(--fm);font-size:9px;color:var(--tm)}
+.main{grid-column:2}.sec{display:none;padding:40px 52px 70px;max-width:920px;animation:fi .25s ease}.sec.act{display:block}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.shd{margin-bottom:40px;padding-bottom:24px;border-bottom:1px solid var(--bd)}
+.shd .ml{font-family:var(--fm);font-size:10px;text-transform:uppercase;letter-spacing:.18em;color:var(--cy);margin-bottom:8px}
+.shd h2{font-family:var(--ff);font-size:32px;line-height:1.15;color:var(--t1);margin-bottom:12px;letter-spacing:-.02em}
+.shd .sd{font-size:15px;color:var(--t2);max-width:600px;line-height:1.7}
+.ct h3{font-family:var(--ff);font-size:22px;color:var(--t1);margin:40px 0 16px}.ct h3:first-child{margin-top:0}
+.ct h4{font-family:var(--fb);font-size:15.5px;font-weight:700;color:var(--cy);margin:28px 0 10px}
+.ct p{margin-bottom:14px;color:var(--t2);font-size:14px;line-height:1.8}
+.ct strong{color:var(--t1);font-weight:600}.ct em{color:var(--or);font-style:italic}
+.ct code{font-family:var(--fm);font-size:12px;background:var(--cB);border:1px solid var(--cD);padding:1px 5px;border-radius:3px;color:var(--cy)}
+.cb{background:var(--cB);border:1px solid var(--cD);border-radius:7px;margin:16px 0 20px;overflow:hidden}
+.cbh{display:flex;align-items:center;justify-content:space-between;padding:8px 14px;background:var(--b2);border-bottom:1px solid var(--cD)}
+.cbh .fn{font-family:var(--fm);font-size:10px;color:var(--tm)}.cbh .lt{font-family:var(--fm);font-size:8px;text-transform:uppercase;letter-spacing:.1em;padding:2px 6px;border-radius:3px;background:var(--cyD);color:var(--cy)}
+.cb pre{padding:16px;overflow-x:auto;font-family:var(--fm);font-size:12px;line-height:1.65;color:var(--t2);tab-size:4}
+.k{color:var(--pu)}.t{color:var(--cy)}.s{color:var(--gn)}.n{color:var(--or)}.c{color:#44445a;font-style:italic}.f{color:var(--yl)}.a{color:var(--or)}
+.cc{background:var(--b3);border:1px solid var(--bd);border-radius:8px;padding:22px;margin:20px 0;transition:border-color .3s}
+.cc:hover{border-color:var(--bd2)}
+.cc.w{border-left:3px solid var(--rd)}.cc.i{border-left:3px solid var(--cy)}.cc.g{border-left:3px solid var(--or)}.cc.p{border-left:3px solid var(--gn)}
+.cc .cl{font-family:var(--fm);font-size:9px;text-transform:uppercase;letter-spacing:.13em;margin-bottom:7px}
+.cc.w .cl{color:var(--rd)}.cc.i .cl{color:var(--cy)}.cc.g .cl{color:var(--or)}.cc.p .cl{color:var(--gn)}
+.cc h5{font-size:14.5px;font-weight:700;color:var(--t1);margin-bottom:8px}
+.cc p{font-size:13px;margin-bottom:7px}.cc p:last-child{margin-bottom:0}
+.tb{width:100%;border-collapse:collapse;margin:20px 0;font-size:12.5px}
+.tb th{text-align:left;padding:9px 12px;background:var(--b2);border:1px solid var(--bd);font-family:var(--fm);font-size:10px;text-transform:uppercase;letter-spacing:.1em;color:var(--cy)}
+.tb td{padding:9px 12px;border:1px solid var(--bd);color:var(--t2);vertical-align:top}
+.tb tr:hover td{background:var(--b3)}
+.tb code{font-family:var(--fm);font-size:11px;background:var(--cB);padding:1px 4px;border-radius:3px;color:var(--cy)}
+.dia{background:var(--b2);border:1px solid var(--bd);border-radius:8px;padding:24px;margin:20px 0;text-align:center;font-family:var(--fm);font-size:12px;line-height:1.8;color:var(--t2);overflow-x:auto;white-space:pre}
+.dia .h{color:var(--cy);font-weight:600}.dia .w{color:var(--or);font-weight:600}.dia .g{color:var(--gn);font-weight:600}
+.prereq{display:inline-flex;align-items:center;gap:5px;font-family:var(--fm);font-size:10px;color:var(--tm);background:var(--b2);padding:3px 10px;border-radius:4px;margin-bottom:16px;border:1px solid var(--bd)}
+.prereq::before{content:'\25C4';font-size:8px;color:var(--cy)}
+@media(max-width:900px){.shell{grid-template-columns:1fr}.side{position:relative;width:100%;height:auto}.side-ft{display:none}.sec{padding:24px 16px 50px}.shd h2{font-size:24px}.main{grid-column:1}}
+</style>
+</head>
+<body>
+<div class="shell">
+<nav class="side">
+<div class="side-hd"><h1>Java Concurrency<br>&amp; Multithreading</h1><div class="sub">Senior Engineering Deep Dive</div></div>
+<div class="sbox"><input type="text" placeholder="Search topics..." id="si"></div>
+<div class="ns"><div class="nst">I - Memory Model &amp; Visibility</div>
+<a class="ni act" data-t="m1"><span class="num">01</span><span class="dot" style="background:var(--pu)"></span>JMM &amp; Happens-Before</a>
+<a class="ni" data-t="m2"><span class="num">02</span><span class="dot" style="background:var(--pu)"></span>Volatile, Atomics &amp; CAS</a>
+</div>
+<div class="ns"><div class="nst">II - Locks &amp; Synchronization</div>
+<a class="ni" data-t="m3"><span class="num">03</span><span class="dot" style="background:var(--cy)"></span>synchronized &amp; ReentrantLock</a>
+<a class="ni" data-t="m4"><span class="num">04</span><span class="dot" style="background:var(--cy)"></span>StampedLock &amp; ReadWriteLock</a>
+</div>
+<div class="ns"><div class="nst">III - Thread Pools &amp; Executors</div>
+<a class="ni" data-t="m5"><span class="num">05</span><span class="dot" style="background:var(--or)"></span>ThreadPoolExecutor Internals</a>
+<a class="ni" data-t="m6"><span class="num">06</span><span class="dot" style="background:var(--or)"></span>ForkJoinPool &amp; Work-Stealing</a>
+</div>
+<div class="ns"><div class="nst">IV - Coordination &amp; Composition</div>
+<a class="ni" data-t="m7"><span class="num">07</span><span class="dot" style="background:var(--yl)"></span>CompletableFuture</a>
+<a class="ni" data-t="m8"><span class="num">08</span><span class="dot" style="background:var(--yl)"></span>Phaser, Latches &amp; Barriers</a>
+<a class="ni" data-t="m9"><span class="num">09</span><span class="dot" style="background:var(--yl)"></span>Concurrent Collections</a>
+</div>
+<div class="ns"><div class="nst">V - Project Loom</div>
+<a class="ni" data-t="m10"><span class="num">10</span><span class="dot" style="background:var(--gn)"></span>Virtual Threads</a>
+<a class="ni" data-t="m11"><span class="num">11</span><span class="dot" style="background:var(--gn)"></span>Structured Concurrency</a>
+</div>
+<div class="ns"><div class="nst">VI - Diagnostics &amp; Debugging</div>
+<a class="ni" data-t="m12"><span class="num">12</span><span class="dot" style="background:var(--rd)"></span>Deadlocks, Livelocks &amp; Starvation</a>
+<a class="ni" data-t="m13"><span class="num">13</span><span class="dot" style="background:var(--rd)"></span>Tooling &amp; Production Profiling</a>
+</div>
+<div class="side-ft"><div class="pb"><div class="pfl" id="pf" style="width:7%"></div></div><div class="ptx"><span id="pt">1 / 13</span> completed</div></div>
+</nav>
+<main class="main" id="mc"></main>
+</div>
+<script>
+const M={
+m1:{l:"Module 01",t:"JMM & Happens-Before",d:"The Java Memory Model defines when one thread writes become visible to another. An abstract contract between your code and the JVM optimizer.",b:`
+<h3>What the JMM Actually Defines</h3>
+<p>The JMM (JSR-133, Java 5+) specifies legal behaviors using <strong>actions</strong> (read, write, lock, unlock, volatile read/write, thread start/join) and <strong>partial orders</strong>:</p>
+<div class="cb"><div class="cbh"><span class="fn">Core Concepts</span><span class="lt">Spec</span></div>
+<pre><span class="c">// Program Order (po):     per-thread total order, as written in source</span>
+<span class="c">// Synchronizes-With (sw): cross-thread edge (volatile write-read, unlock-lock)</span>
+<span class="c">// Happens-Before (hb):    transitive closure of po U sw</span>
+<span class="c">//</span>
+<span class="c">// THE RULE: If write W hb read R, then R sees W.</span>
+<span class="c">// If NO hb exists - data race - undefined behavior.</span></pre></div>
+
+<h3>Complete Happens-Before Edges (JLS 17.4.5)</h3>
+<table class="tb"><tr><th>#</th><th>Rule</th><th>What It Means</th></tr>
+<tr><td>1</td><td><strong>Program Order</strong></td><td>Each action in a thread hb every subsequent action in that same thread</td></tr>
+<tr><td>2</td><td><strong>Monitor Lock</strong></td><td><code>unlock(m)</code> hb subsequent <code>lock(m)</code> on same monitor</td></tr>
+<tr><td>3</td><td><strong>Volatile</strong></td><td>Write to volatile field hb subsequent read of that field</td></tr>
+<tr><td>4</td><td><strong>Thread Start</strong></td><td><code>thread.start()</code> hb any action in the started thread</td></tr>
+<tr><td>5</td><td><strong>Thread Join</strong></td><td>Any action in thread T hb return of <code>T.join()</code></td></tr>
+<tr><td>6</td><td><strong>Interruption</strong></td><td><code>interrupt()</code> hb detection of interrupt</td></tr>
+<tr><td>7</td><td><strong>Finalizer</strong></td><td>End of constructor hb start of <code>finalize()</code></td></tr>
+<tr><td>8</td><td><strong>Transitivity</strong></td><td>If A hb B and B hb C, then A hb C</td></tr></table>
+
+<h4>Reasoning Pattern: Chaining hb Edges</h4>
+<div class="cb"><div class="cbh"><span class="fn">SafePublication.java</span><span class="lt">Java</span></div>
+<pre><span class="k">class</span> <span class="t">Publisher</span> {
+    <span class="k">volatile</span> <span class="t">Holder</span> holder;
+    <span class="c">// Thread A:</span>
+    <span class="k">void</span> <span class="f">publish</span>() {
+        <span class="t">Holder</span> h = <span class="k">new</span> <span class="t">Holder</span>(<span class="n">42</span>);  <span class="c">// (1) write field</span>
+        holder = h;                   <span class="c">// (2) volatile write</span>
+    }
+    <span class="c">// Thread B:</span>
+    <span class="k">void</span> <span class="f">consume</span>() {
+        <span class="t">Holder</span> h = holder;            <span class="c">// (3) volatile read</span>
+        <span class="k">if</span> (h != <span class="k">null</span>)
+            <span class="f">use</span>(h.value);             <span class="c">// (4) sees 42</span>
+    }
+}
+<span class="c">// Chain: (1) -po- (2) -volatile- (3) -po- (4) therefore (1) hb (4)</span></pre></div>
+
+<div class="cc w"><div class="cl">Critical Pitfall</div><h5>Benign data races do not exist</h5>
+<p>Without an hb chain, the reading thread may see a <strong>partially constructed object</strong> with default field values despite the reference being non-null. Every shared mutable state needs an hb edge.</p></div>
+
+<h3>Memory Semantics Summary</h3>
+<table class="tb"><tr><th>Construct</th><th>Visibility</th><th>Cost</th></tr>
+<tr><td><code>volatile</code></td><td>Full hb edge. <strong>All</strong> prior writes visible on volatile read (piggybacking)</td><td>Write: MFENCE (x86). Read: compiler fence</td></tr>
+<tr><td><code>synchronized</code></td><td>Unlock hb lock on same monitor. Mutual exclusion + visibility</td><td>Thin lock (CAS) to fat lock (OS mutex)</td></tr>
+<tr><td><code>final</code> fields</td><td>Correctly published object final fields visible to all</td><td>x86: free. ARM: LoadLoad barrier</td></tr>
+<tr><td><code>VarHandle</code></td><td>Fine-grained: plain, opaque, acquire/release, volatile</td><td>Zero to full volatile cost</td></tr></table>
+
+<h4>VarHandle Access Modes (Java 9+)</h4>
+<div class="cb"><div class="cbh"><span class="fn">Precision ordering</span><span class="lt">Java</span></div>
+<pre><span class="c">// Plain    - no guarantees        // Opaque   - no tearing, no ordering</span>
+<span class="c">// Acquire  - sees all prior Releases  // Release - visible to Acquires</span>
+<span class="c">// Volatile - full sequential consistency</span>
+COUNTER.<span class="f">setRelease</span>(<span class="k">this</span>, <span class="n">3</span>);
+<span class="t">int</span> v = (<span class="t">int</span>) COUNTER.<span class="f">getAcquire</span>(<span class="k">this</span>);
+<span class="c">// Cheaper than volatile for one-direction publish/consume.</span>
+<span class="c">// Used inside ForkJoinPool, ConcurrentHashMap.</span></pre></div>
+
+<div class="cc i"><div class="cl">Mental Model</div><h5>Think edges, not caches</h5>
+<p>Never reason about flushing caches. Reason about <strong>happens-before edges</strong>. Draw an unbroken chain using the 8 rules above. Chain exists = read sees write. No chain = bug. Works on every architecture.</p></div>
+`},
+
+m2:{l:"Module 02",t:"Volatile, Atomics & CAS",d:"CAS loops, contention strategies, AtomicLong vs LongAdder, the ABA problem, and false sharing.",b:`
+<div class="prereq">Requires: Module 01</div>
+<h3>CAS: The Hardware Primitive</h3>
+<p><code>CMPXCHG</code> (x86) / <code>LL/SC</code> (ARM) atomically reads, compares, conditionally writes. Every <code>java.util.concurrent.atomic</code> class is built on this:</p>
+<div class="cb"><div class="cbh"><span class="fn">AtomicInteger.incrementAndGet() internals</span><span class="lt">Java</span></div>
+<pre><span class="k">public final int</span> <span class="f">incrementAndGet</span>() {
+    <span class="k">int</span> prev, next;
+    <span class="k">do</span> {
+        prev = <span class="f">get</span>();              <span class="c">// volatile read</span>
+        next = prev + <span class="n">1</span>;
+    } <span class="k">while</span> (!<span class="f">compareAndSet</span>(prev, next)); <span class="c">// retry on conflict</span>
+    <span class="k">return</span> next;
+}</pre></div>
+
+<h3>AtomicLong vs LongAdder</h3>
+<table class="tb"><tr><th></th><th><code>AtomicLong</code></th><th><code>LongAdder</code></th></tr>
+<tr><td>Write</td><td>CAS spin, O(threads) retries</td><td>Per-cell, ~O(1)</td></tr>
+<tr><td>Read</td><td>Exact (volatile read)</td><td><strong>Approximate</strong> (sum of cells)</td></tr>
+<tr><td>Memory</td><td>8B + header</td><td>Base + Cell[] (128B/cell, padded)</td></tr>
+<tr><td>Use</td><td>Sequence IDs, low contention</td><td>Counters, metrics, statistics</td></tr></table>
+
+<div class="cc g"><div class="cl">Gotcha</div><h5>The ABA Problem</h5>
+<p>Value: X then Y then X. CAS succeeds despite intervening change. Harmless for counters; <strong>dangerous for lock-free data structures on references</strong>. Fix: <code>AtomicStampedReference</code> (version stamp).</p></div>
+
+<h3>False Sharing</h3>
+<div class="cb"><div class="cbh"><span class="fn">Two volatile fields on same cache line</span><span class="lt">Java</span></div>
+<pre><span class="c">// BAD - writes to one invalidate the other thread cache</span>
+<span class="k">class</span> <span class="t">Shared</span> { <span class="k">volatile long</span> a; <span class="k">volatile long</span> b; }
+
+<span class="c">// FIX - padding (or @jdk.internal.vm.annotation.Contended)</span>
+<span class="k">class</span> <span class="t">Padded</span> {
+    <span class="k">volatile long</span> a;
+    <span class="k">long</span> p1,p2,p3,p4,p5,p6,p7; <span class="c">// 56B padding, separate cache lines</span>
+    <span class="k">volatile long</span> b;
+}</pre></div>
+
+<div class="cc p"><div class="cl">Decision Rule</div><h5>Choosing the right atomic</h5>
+<p><strong>Low contention + exact:</strong> AtomicLong/AtomicReference. <strong>High contention + approximate:</strong> LongAdder/LongAccumulator. <strong>Fine ordering:</strong> VarHandle acquire/release. <strong>Reference + version:</strong> AtomicStampedReference.</p></div>
+`},
+
+m3:{l:"Module 03",t:"synchronized & ReentrantLock",d:"The two workhorse locking mechanisms, internal mechanics, when to choose each, Condition variables, and the critical difference for virtual threads.",b:`
+<h3>synchronized: Adaptive Locking</h3>
+<div class="dia"><span class="g">Uncontended</span>              <span class="w">Light contention</span>          <span class="h" style="color:var(--rd)">Heavy contention</span>
+     |                          |                          |
+ Biased Lock              Thin Lock (CAS)            Fat Lock (OS mutex)
+ (removed JDK 15)        spin on mark word           park/unpark threads
+ Cost: ~0 ns              Cost: ~20-50 ns            Cost: ~10 us</div>
+
+<div class="cc i"><div class="cl">Key Point</div><h5>synchronized = mutual exclusion + visibility</h5>
+<p>Unlock hb subsequent lock on same monitor. All writes before unlock visible after lock. Correctly synchronized code does not need volatile for protected fields.</p></div>
+
+<h3>ReentrantLock: When You Need More</h3>
+<table class="tb"><tr><th>Feature</th><th><code>synchronized</code></th><th><code>ReentrantLock</code></th></tr>
+<tr><td>Reentrancy</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Fairness</td><td>No</td><td>Configurable</td></tr>
+<tr><td><code>tryLock(timeout)</code></td><td>No</td><td><strong>Yes</strong></td></tr>
+<tr><td><code>lockInterruptibly()</code></td><td>No</td><td><strong>Yes</strong></td></tr>
+<tr><td>Multiple Conditions</td><td>No</td><td><strong>Yes</strong></td></tr>
+<tr><td>Virtual Thread pinning</td><td><strong>Pins carrier</strong> (pre-JDK 24)</td><td>No pinning</td></tr>
+<tr><td>Auto-release</td><td>Yes (scope exit)</td><td>No, must unlock in finally</td></tr></table>
+
+<div class="cb"><div class="cbh"><span class="fn">ReentrantLock patterns</span><span class="lt">Java</span></div>
+<pre><span class="k">final</span> <span class="t">ReentrantLock</span> lock = <span class="k">new</span> <span class="t">ReentrantLock</span>();
+<span class="k">final</span> <span class="t">Condition</span> notEmpty = lock.<span class="f">newCondition</span>();
+
+lock.<span class="f">lock</span>();
+<span class="k">try</span> {
+    <span class="k">while</span> (queue.<span class="f">isEmpty</span>()) notEmpty.<span class="f">await</span>();
+    <span class="k">return</span> queue.<span class="f">poll</span>();
+} <span class="k">finally</span> { lock.<span class="f">unlock</span>(); }
+
+<span class="c">// Timed tryLock prevents deadlocks</span>
+<span class="k">if</span> (lock.<span class="f">tryLock</span>(<span class="n">1</span>, <span class="t">SECONDS</span>)) {
+    <span class="k">try</span> { <span class="c">/* work */</span> } <span class="k">finally</span> { lock.<span class="f">unlock</span>(); }
+} <span class="k">else</span> { <span class="c">/* handle timeout */</span> }</pre></div>
+
+<div class="cc w"><div class="cl">Decision Rule</div><h5>When to use which</h5>
+<p><strong>Default: synchronized</strong> for simplicity, no leak risk, JVM-optimized. <strong>Switch to ReentrantLock</strong> when you need: tryLock, interruptible waiting, multiple Conditions, fair ordering, or <strong>virtual thread compatibility</strong> (pre-JDK 24).</p></div>
+`},
+
+m4:{l:"Module 04",t:"StampedLock & ReadWriteLock",d:"Read-heavy workloads need read-write separation. ReadWriteLock provides it simply; StampedLock adds optimistic reads for higher throughput, but with sharp edges.",b:`
+<div class="prereq">Requires: Module 03</div>
+<h3>ReadWriteLock</h3>
+<p><code>ReentrantReadWriteLock</code>: multiple concurrent readers OR one exclusive writer.</p>
+<div class="cc g"><div class="cl">Gotcha</div><h5>Writer starvation</h5>
+<p>Non-fair mode (default): steady readers starve writers indefinitely. Use <code>new ReentrantReadWriteLock(true)</code> for fairness, but fair mode has ~2x overhead.</p></div>
+
+<h3>StampedLock: Optimistic Reads</h3>
+<div class="cb"><div class="cbh"><span class="fn">Three modes</span><span class="lt">Java 8+</span></div>
+<pre><span class="k">final</span> <span class="t">StampedLock</span> sl = <span class="k">new</span> <span class="t">StampedLock</span>();
+
+<span class="c">// OPTIMISTIC READ - no lock, just a stamp</span>
+<span class="k">double</span> <span class="f">distance</span>() {
+    <span class="k">long</span> stamp = sl.<span class="f">tryOptimisticRead</span>();
+    <span class="k">double</span> cx = x, cy = y;
+    <span class="k">if</span> (!sl.<span class="f">validate</span>(stamp)) {       <span class="c">// write happened?</span>
+        stamp = sl.<span class="f">readLock</span>();        <span class="c">// fallback</span>
+        <span class="k">try</span> { cx = x; cy = y; }
+        <span class="k">finally</span> { sl.<span class="f">unlockRead</span>(stamp); }
+    }
+    <span class="k">return</span> Math.<span class="f">sqrt</span>(cx*cx + cy*cy);
+}
+
+<span class="c">// WRITE LOCK</span>
+<span class="k">long</span> stamp = sl.<span class="f">writeLock</span>();
+<span class="k">try</span> { x = newX; y = newY; }
+<span class="k">finally</span> { sl.<span class="f">unlockWrite</span>(stamp); }
+
+<span class="c">// UPGRADE read to write</span>
+<span class="k">long</span> ws = sl.<span class="f">tryConvertToWriteLock</span>(stamp);
+<span class="k">if</span> (ws != <span class="n">0L</span>) stamp = ws;
+<span class="k">else</span> { sl.<span class="f">unlockRead</span>(stamp); stamp = sl.<span class="f">writeLock</span>(); }</pre></div>
+
+<div class="cc w"><div class="cl">Sharp Edges</div><h5>Three things that will bite you</h5>
+<p><strong>1. Not reentrant</strong> - write lock + read lock attempt = deadlock. <strong>2.</strong> No Condition support. <strong>3.</strong> Stamp of 0 always fails validation.</p></div>
+
+<table class="tb"><tr><th>Choose</th><th>When</th></tr>
+<tr><td><code>synchronized</code></td><td>Simple mutex, short sections</td></tr>
+<tr><td><code>ReentrantLock</code></td><td>tryLock, Conditions, VT compat</td></tr>
+<tr><td><code>ReentrantReadWriteLock</code></td><td>Read-heavy, simple separation</td></tr>
+<tr><td><code>StampedLock</code></td><td>Read-very-heavy, perf-critical, no reentrancy</td></tr></table>
+`},
+
+m5:{l:"Module 05",t:"ThreadPoolExecutor Internals",d:"The most-used concurrency API: lifecycle, sizing, queue types, rejection policies, and factory method pitfalls that cause production outages.",b:`
+<h3>The 7 Parameters</h3>
+<div class="cb"><div class="cbh"><span class="fn">Direct construction (always preferred)</span><span class="lt">Java</span></div>
+<pre><span class="k">new</span> <span class="t">ThreadPoolExecutor</span>(
+    <span class="n">4</span>,                              <span class="c">// corePoolSize</span>
+    <span class="n">16</span>,                             <span class="c">// maxPoolSize</span>
+    <span class="n">60</span>, <span class="t">TimeUnit</span>.SECONDS,           <span class="c">// keepAlive for idle threads</span>
+    <span class="k">new</span> <span class="t">ArrayBlockingQueue</span>&lt;&gt;(<span class="n">100</span>), <span class="c">// BOUNDED work queue</span>
+    <span class="k">new</span> <span class="t">NamedThreadFactory</span>(<span class="s">"orders"</span>), <span class="c">// name your threads!</span>
+    <span class="k">new</span> <span class="t">AbortPolicy</span>()              <span class="c">// rejection handler</span>
+);</pre></div>
+
+<h4>Task Submission Flow</h4>
+<div class="dia">Task submitted
+      |
+threads &lt; <span class="g">corePoolSize</span>?  -yes-&gt; Create thread, run task
+      | no
+<span class="h">workQueue</span> has space?  -----yes-&gt; Enqueue, wait for thread
+      | no
+threads &lt; <span class="w">maxPoolSize</span>?  -yes-&gt; Create thread, run task
+      | no
+<span class="w">RejectionHandler</span> fires</div>
+
+<div class="cc w"><div class="cl">Factory Method Traps</div><h5>Why Executors.newXxx() kills services</h5>
+<p><strong>newFixedThreadPool</strong>: unbounded LinkedBlockingQueue, queue grows forever, OOM. <strong>newCachedThreadPool</strong>: maxPool = MAX_VALUE, thousands of threads, OOM. <strong>Always construct ThreadPoolExecutor directly</strong> with bounded queue.</p></div>
+
+<h3>Rejection Policies</h3>
+<table class="tb"><tr><th>Policy</th><th>Behavior</th><th>Use When</th></tr>
+<tr><td><code>AbortPolicy</code></td><td>Throws RejectedExecutionException</td><td>Default. Return 503.</td></tr>
+<tr><td><code>CallerRunsPolicy</code></td><td>Caller runs the task</td><td>Backpressure. <strong>Danger:</strong> blocks event-loop callers!</td></tr>
+<tr><td><code>DiscardPolicy</code></td><td>Silently drops</td><td>Fire-and-forget (metrics)</td></tr>
+<tr><td><code>DiscardOldestPolicy</code></td><td>Drops oldest queued</td><td>Only latest matters (sensors)</td></tr></table>
+
+<div class="cc p"><div class="cl">Sizing Formula</div><h5>CPU-bound vs I/O-bound</h5>
+<p><strong>CPU:</strong> threads = N_cpu + 1. <strong>I/O:</strong> threads = N_cpu x (1 + wait/compute). Tasks block 90%? Use N_cpu x 10. Or: use virtual threads for I/O and skip the math.</p></div>
+`},
+
+m6:{l:"Module 06",t:"ForkJoinPool & Work-Stealing",d:"Work-stealing deques, the common pool singleton that powers parallelStream, CompletableFuture, and virtual thread scheduling.",b:`
+<div class="prereq">Requires: Module 05</div>
+<h3>Work-Stealing Architecture</h3>
+<div class="dia">+------------------------------------------------+
+|              <span class="h">ForkJoinPool</span>                       |
+|  Worker-0     Worker-1     Worker-2    Worker-3 |
+|  +-----+      +-----+      +-----+    +-----+  |
+|  |[TTT]|      |[TT ]|      |[ T ]|    |[   ]|  |
+|  | <span class="h">LIFO</span>|      | <span class="h">LIFO</span>|      | <span class="h">LIFO</span>|    |idle |  |
+|  +-----+      +-----+      +-----+    +-----+  |
+|     |                                     ^     |
+|     +---- <span class="w">FIFO steal from BOTTOM</span> ---------+     |
+|  Owner: LIFO (cache-hot)  Thief: FIFO (older)  |
++------------------------------------------------+</div>
+
+<div class="cc i"><div class="cl">Critical</div><h5>The common pool is shared by everything</h5>
+<p><code>parallelStream()</code>, <code>CompletableFuture.xxxAsync()</code> (no executor), <code>Arrays.parallelSort()</code>, HTTP/2 client all use <code>ForkJoinPool.commonPool()</code> (availableProcessors - 1 threads). Blocking it degrades all simultaneously.</p></div>
+
+<h3>ManagedBlocker</h3>
+<div class="cb"><div class="cbh"><span class="fn">Cooperating with the pool on blocking</span><span class="lt">Java</span></div>
+<pre><span class="k">class</span> <span class="t">HttpFetch</span> <span class="k">implements</span> <span class="t">ForkJoinPool.ManagedBlocker</span> {
+    <span class="k">volatile</span> <span class="t">String</span> result;
+    <span class="a">@Override</span> <span class="k">public boolean</span> <span class="f">block</span>() { result=<span class="f">httpGet</span>(url); <span class="k">return true</span>; }
+    <span class="a">@Override</span> <span class="k">public boolean</span> <span class="f">isReleasable</span>() { <span class="k">return</span> result!=<span class="k">null</span>; }
+}
+<span class="t">ForkJoinPool</span>.<span class="f">managedBlock</span>(<span class="k">new</span> <span class="t">HttpFetch</span>(url));
+<span class="c">// Pool spawns compensation thread to maintain parallelism</span></pre></div>
+
+<div class="cc w"><div class="cl">Danger</div><h5>Compensation threads can explode</h5>
+<p>500 blocking tasks = up to 500 compensation threads (max 32767). This is how virtual threads work internally, but with platform threads it is a resource bomb. Monitor <code>getPoolSize()</code>.</p></div>
+`},
+
+m7:{l:"Module 07",t:"CompletableFuture",d:"Executor affinity (which thread runs your callback?), exception propagation, fan-out/fan-in, timeouts, and production-safe patterns.",b:`
+<div class="prereq">Requires: Modules 05-06</div>
+<h3>The Async Suffix Contract</h3>
+<div class="cb"><div class="cbh"><span class="fn">Which thread runs your callback?</span><span class="lt">Java</span></div>
+<pre><span class="t">CF</span>&lt;<span class="t">String</span>&gt; cf = <span class="t">CF</span>.<span class="f">supplyAsync</span>(() -&gt; <span class="f">dbQuery</span>(), dbPool);
+
+cf.<span class="f">thenApply</span>(s -&gt; <span class="f">parse</span>(s));           <span class="c">// completing thread OR caller</span>
+cf.<span class="f">thenApplyAsync</span>(s -&gt; <span class="f">parse</span>(s), pool); <span class="c">// specified executor</span>
+cf.<span class="f">thenApplyAsync</span>(s -&gt; <span class="f">parse</span>(s));       <span class="c">// commonPool (shared!)</span></pre></div>
+
+<div class="cc w"><div class="cl">Production Rule</div><h5>Always specify executor for Async methods</h5>
+<p>Default commonPool has availableProcessors-1 threads, shared globally. Blocking callbacks starve parallel streams, other CFs, and ForkJoinPool. Always pass explicit executor.</p></div>
+
+<h3>Exception Handling</h3>
+<div class="cb"><div class="cbh"><span class="fn">Three strategies</span><span class="lt">Java</span></div>
+<pre><span class="c">// exceptionally: catch + fallback</span>
+cf.<span class="f">exceptionally</span>(ex -&gt; { log(ex.<span class="f">getCause</span>()); <span class="k">return</span> <span class="s">"fallback"</span>; });
+
+<span class="c">// handle: sees both, transforms</span>
+cf.<span class="f">handle</span>((r, ex) -&gt; ex != <span class="k">null</span> ? <span class="f">recover</span>(ex) : <span class="f">process</span>(r));
+
+<span class="c">// whenComplete: observe only (metrics, logging)</span>
+cf.<span class="f">whenComplete</span>((r, ex) -&gt; <span class="f">recordMetrics</span>(r, ex));
+<span class="c">// Always unwrap: ex.getCause() - wrapped in CompletionException</span></pre></div>
+
+<h3>Composition Patterns</h3>
+<div class="cb"><div class="cbh"><span class="fn">Production patterns</span><span class="lt">Java</span></div>
+<pre><span class="c">// FAN-OUT / FAN-IN with per-supplier timeouts</span>
+<span class="t">List</span>&lt;<span class="t">CF</span>&lt;<span class="t">Price</span>&gt;&gt; futs = suppliers.<span class="f">stream</span>()
+    .<span class="f">map</span>(s -&gt; <span class="t">CF</span>.<span class="f">supplyAsync</span>(() -&gt; s.<span class="f">getPrice</span>(), io)
+        .<span class="f">completeOnTimeout</span>(Price.UNKNOWN, <span class="n">3</span>, <span class="t">SECONDS</span>))
+    .<span class="f">toList</span>();
+<span class="t">CF</span>.<span class="f">allOf</span>(futs.<span class="f">toArray</span>(<span class="k">new</span> <span class="t">CF</span>[<span class="n">0</span>]))
+  .<span class="f">thenApply</span>(v -&gt; futs.<span class="f">stream</span>().<span class="f">map</span>(<span class="t">CF</span>::join).<span class="f">toList</span>());
+
+<span class="c">// FIRST WINS</span>
+<span class="t">CF</span>.<span class="f">anyOf</span>(futs.<span class="f">toArray</span>(<span class="k">new</span> <span class="t">CF</span>[<span class="n">0</span>])).<span class="f">thenApply</span>(o -&gt; (<span class="t">Price</span>) o);
+
+<span class="c">// SEQUENTIAL DEPENDENCY (flatMap)</span>
+<span class="f">getUserId</span>().<span class="f">thenCompose</span>(id -&gt; <span class="f">getProfile</span>(id))
+            .<span class="f">thenCompose</span>(p -&gt; <span class="f">getPrefs</span>(p));
+
+<span class="c">// COMBINE two independent results</span>
+cfUser.<span class="f">thenCombine</span>(cfOrders, (u, o) -&gt; <span class="k">new</span> <span class="t">Response</span>(u, o));</pre></div>
+`},
+
+m8:{l:"Module 08",t:"Phaser, Latches & Barriers",d:"Thread coordination: CountDownLatch (one-shot gate), CyclicBarrier (repeating sync), Phaser (dynamic parties, phases, termination).",b:`
+<h3>Comparison</h3>
+<table class="tb"><tr><th></th><th>CountDownLatch</th><th>CyclicBarrier</th><th>Phaser</th></tr>
+<tr><td>Reusable</td><td>No</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Dynamic parties</td><td>No</td><td>No</td><td><strong>Yes</strong></td></tr>
+<tr><td>Phases</td><td>1</td><td>Repeating</td><td><strong>Distinct N</strong></td></tr>
+<tr><td>Termination</td><td>count=0</td><td>BrokenBarrierException</td><td><strong>onAdvance()</strong></td></tr>
+<tr><td>Hierarchy</td><td>No</td><td>No</td><td><strong>Tiered</strong></td></tr></table>
+
+<div class="cb"><div class="cbh"><span class="fn">Phaser multi-phase pipeline</span><span class="lt">Java</span></div>
+<pre><span class="t">Phaser</span> ph = <span class="k">new</span> <span class="t">Phaser</span>(workers) {
+    <span class="a">@Override</span> <span class="k">protected boolean</span> <span class="f">onAdvance</span>(<span class="k">int</span> phase, <span class="k">int</span> parties) {
+        <span class="k">return</span> phase &gt;= max || parties == <span class="n">0</span>;  <span class="c">// true = terminate</span>
+    }
+};
+<span class="c">// Worker loop:</span>
+<span class="k">while</span> (!ph.<span class="f">isTerminated</span>()) {
+    <span class="f">work</span>(ph.<span class="f">getPhase</span>());
+    ph.<span class="f">arriveAndAwaitAdvance</span>();
+    <span class="k">if</span> (<span class="f">done</span>()) ph.<span class="f">arriveAndDeregister</span>(); <span class="c">// dynamic exit</span>
+}</pre></div>
+
+<div class="cc p"><div class="cl">Tip</div><h5>Tiered Phasers for 100+ parties</h5>
+<p>Parent with child Phasers (~50 each): <code>new Phaser(parent, 50)</code>. Reduces contention on internal state.</p></div>
+`},
+
+m9:{l:"Module 09",t:"Concurrent Collections",d:"ConcurrentHashMap internals, atomic compound operations, CopyOnWriteArrayList, blocking queues, and choosing the right collection.",b:`
+<h3>ConcurrentHashMap (Java 8+)</h3>
+<p><strong>Per-bin locking</strong> (synchronized on first node). Reads are lock-free (volatile). Near-linear scalability.</p>
+
+<div class="cb"><div class="cbh"><span class="fn">Atomic compound operations</span><span class="lt">Java</span></div>
+<pre><span class="c">// WRONG: check-then-act race</span>
+<span class="k">if</span> (!map.<span class="f">containsKey</span>(k)) map.<span class="f">put</span>(k, <span class="n">1L</span>);
+
+<span class="c">// RIGHT: atomic compound operations</span>
+map.<span class="f">putIfAbsent</span>(k, <span class="n">0L</span>);
+map.<span class="f">merge</span>(k, <span class="n">1L</span>, Long::sum);           <span class="c">// best for counters</span>
+map.<span class="f">compute</span>(k, (key,v) -&gt; v==<span class="k">null</span>?<span class="n">1L</span>:v+<span class="n">1</span>);
+map.<span class="f">computeIfAbsent</span>(k, key -&gt; <span class="f">expensive</span>(key)); <span class="c">// lazy init</span></pre></div>
+
+<div class="cc w"><div class="cl">Pitfall</div><h5>size() is an estimate under concurrency</h5>
+<p>Never use <code>size()</code> for logic. Map may change between size() and your action. Use atomic operations instead of check-then-act.</p></div>
+
+<h3>Collection Selection Guide</h3>
+<table class="tb"><tr><th>Collection</th><th>Reads</th><th>Writes</th><th>Best For</th></tr>
+<tr><td><code>ConcurrentHashMap</code></td><td>Lock-free</td><td>Per-bin</td><td>Default concurrent map</td></tr>
+<tr><td><code>ConcurrentSkipListMap</code></td><td>Lock-free</td><td>CAS</td><td>Sorted map, range queries</td></tr>
+<tr><td><code>CopyOnWriteArrayList</code></td><td>Lock-free</td><td>Full copy</td><td>Tiny, rarely-modified lists</td></tr>
+<tr><td><code>ConcurrentLinkedQueue</code></td><td>CAS</td><td>CAS</td><td>Lock-free FIFO, unbounded</td></tr>
+<tr><td><code>ArrayBlockingQueue</code></td><td>Lock</td><td>Lock</td><td>Bounded producer-consumer</td></tr>
+<tr><td><code>LinkedBlockingQueue</code></td><td>Lock</td><td>Lock</td><td>Producer-consumer, higher throughput</td></tr></table>
+`},
+
+m10:{l:"Module 10",t:"Virtual Threads",d:"Java 21 paradigm shift: million-thread concurrency. Continuations on carriers, pinning, what to migrate, ThreadLocal to ScopedValue.",b:`
+<h3>Architecture</h3>
+<div class="dia">+----------------------------------------------+
+|          <span class="h">Virtual Thread Scheduler</span>              |
+|     (ForkJoinPool, ~CPU count carriers)       |
+|                                               |
+| Carrier-0      Carrier-1      Carrier-2       |
+| +------+       +------+       +------+        |
+| |<span class="g">VT-42</span> |       |<span class="g">VT-108</span>|       |<span class="g"> VT-7</span> |        |
+| |running|       |running|       |running|       |
+| +------+       +------+       +------+        |
+|                                               |
+| <span class="w">Parked:</span> VT-1 .. VT-999,997 (heap, ~100s B)   |
+|                                               |
+| VT blocks I/O: yield, carrier runs next VT    |
+| I/O done: VT re-scheduled on any carrier      |
++----------------------------------------------+</div>
+
+<div class="cb"><div class="cbh"><span class="fn">Usage</span><span class="lt">Java 21+</span></div>
+<pre><span class="k">try</span> (<span class="k">var</span> exec = <span class="t">Executors</span>.<span class="f">newVirtualThreadPerTaskExecutor</span>()) {
+    <span class="k">for</span> (<span class="k">int</span> i = <span class="n">0</span>; i &lt; <span class="n">1_000_000</span>; i++)
+        exec.<span class="f">submit</span>(() -&gt; {
+            <span class="f">blockingHttpGet</span>(url);  <span class="c">// blocks VT, not carrier</span>
+            <span class="f">blockingDbWrite</span>(data); <span class="c">// blocks VT, not carrier</span>
+        });
+}</pre></div>
+
+<h3>The Three Rules</h3>
+<div class="cc w"><div class="cl">Rule 1: Pinning</div><h5>synchronized blocks pin the carrier</h5>
+<p>VT inside <code>synchronized</code> or JNI = pinned = carrier cannot serve other VTs. <strong>Fix:</strong> Replace with <code>ReentrantLock</code>. Detect: <code>-Djdk.tracePinnedThreads=short</code>. JDK 24+ fixes most cases.</p></div>
+
+<div class="cc g"><div class="cl">Rule 2: Do Not Pool</div><h5>Creation: ~1 microsecond, ~100s bytes</h5>
+<p>Pooling limits concurrency. One VT per task, always.</p></div>
+
+<div class="cc i"><div class="cl">Rule 3: I/O Only</div><h5>Not for CPU-bound work</h5>
+<p>Only N carriers = CPU count. VTs add overhead with no benefit for computation. Use ForkJoinPool for CPU work.</p></div>
+
+<h4>ThreadLocal to ScopedValue</h4>
+<div class="cb"><div class="cbh"><span class="fn">Migration</span><span class="lt">Java 21+</span></div>
+<pre><span class="c">// 1M VTs x ThreadLocal = 1M copies. Use ScopedValue instead:</span>
+<span class="k">static final</span> <span class="t">ScopedValue</span>&lt;<span class="t">User</span>&gt; CTX = <span class="t">ScopedValue</span>.<span class="f">newInstance</span>();
+<span class="t">ScopedValue</span>.<span class="f">where</span>(CTX, user).<span class="f">run</span>(() -&gt; {
+    CTX.<span class="f">get</span>();  <span class="c">// immutable, inheritable, lightweight</span>
+});</pre></div>
+`},
+
+m11:{l:"Module 11",t:"Structured Concurrency",d:"Task lifetime = lexical scope. Automatic cancellation, no leaked threads, no forgotten futures. Concurrent code as safe as sequential.",b:`
+<div class="prereq">Requires: Module 10</div>
+<h3>Core Pattern</h3>
+<div class="cb"><div class="cbh"><span class="fn">ShutdownOnFailure: fail fast</span><span class="lt">Java 21+ (Preview)</span></div>
+<pre><span class="t">Response</span> <span class="f">handle</span>(<span class="k">long</span> userId) <span class="k">throws</span> <span class="t">Exception</span> {
+    <span class="k">try</span> (<span class="k">var</span> scope = <span class="k">new</span> <span class="t">StructuredTaskScope.ShutdownOnFailure</span>()) {
+        <span class="k">var</span> user   = scope.<span class="f">fork</span>(() -&gt; <span class="f">fetchUser</span>(userId));
+        <span class="k">var</span> orders = scope.<span class="f">fork</span>(() -&gt; <span class="f">fetchOrders</span>(userId));
+        scope.<span class="f">join</span>().<span class="f">throwIfFailed</span>();
+        <span class="k">return new</span> <span class="t">Response</span>(user.<span class="f">get</span>(), orders.<span class="f">get</span>());
+    }
+    <span class="c">// fetchUser fails: fetchOrders AUTO-CANCELLED</span>
+    <span class="c">// Parent interrupted: BOTH cancelled</span>
+    <span class="c">// Scope closes: all children terminated</span>
+}
+
+<span class="c">// ShutdownOnSuccess: first wins</span>
+<span class="k">try</span> (<span class="k">var</span> scope = <span class="k">new</span> <span class="t">StructuredTaskScope.ShutdownOnSuccess</span>&lt;<span class="t">Price</span>&gt;()) {
+    <span class="k">for</span> (<span class="t">Supplier</span> s : suppliers) scope.<span class="f">fork</span>(() -&gt; s.<span class="f">getPrice</span>());
+    scope.<span class="f">join</span>();
+    <span class="k">return</span> scope.<span class="f">result</span>();  <span class="c">// fastest, rest cancelled</span>
+}</pre></div>
+
+<div class="cc i"><div class="cl">What You Get</div><h5>Five guarantees for free</h5>
+<p><strong>1.</strong> Automatic sibling cancellation on failure. <strong>2.</strong> No leaked threads, scope close = termination. <strong>3.</strong> Meaningful thread dumps (parent-child). <strong>4.</strong> ScopedValue inheritance in forked tasks. <strong>5.</strong> Exception propagation to parent.</p></div>
+`},
+
+m12:{l:"Module 12",t:"Deadlocks, Livelocks & Starvation",d:"Three ways concurrent programs stop progressing: how to recognize each, how they differ, and battle-tested prevention patterns.",b:`
+<h3>Know the Difference</h3>
+<table class="tb"><tr><th>Problem</th><th>Blocked?</th><th>CPU</th><th>Symptom</th></tr>
+<tr><td><strong>Deadlock</strong></td><td>Yes, forever</td><td>0%</td><td>Requests hang indefinitely</td></tr>
+<tr><td><strong>Livelock</strong></td><td>No, running</td><td>100%</td><td>CPU pegged, no progress</td></tr>
+<tr><td><strong>Starvation</strong></td><td>Queued</td><td>Varies</td><td>p99 explosion, bimodal latency</td></tr></table>
+
+<h3>Deadlock Prevention</h3>
+<div class="cb"><div class="cbh"><span class="fn">Lock ordering fix</span><span class="lt">Java</span></div>
+<pre><span class="c">// BROKEN: order depends on arguments, circular wait possible</span>
+<span class="k">synchronized</span>(from) { <span class="k">synchronized</span>(to) { <span class="c">/*...*/</span> } }
+
+<span class="c">// FIXED: global order by stable identity</span>
+<span class="t">Account</span> first  = a.id &lt; b.id ? a : b;
+<span class="t">Account</span> second = a.id &lt; b.id ? b : a;
+<span class="k">synchronized</span>(first) { <span class="k">synchronized</span>(second) { <span class="c">/*safe*/</span> } }
+
+<span class="c">// ALT: tryLock + backoff + jitter</span>
+<span class="k">if</span> (a.lock.<span class="f">tryLock</span>(<span class="n">100</span>,<span class="t">MS</span>)) {
+  <span class="k">try</span> { <span class="k">if</span> (b.lock.<span class="f">tryLock</span>(<span class="n">100</span>,<span class="t">MS</span>)) {
+    <span class="k">try</span> { <span class="c">/*work*/</span> } <span class="k">finally</span> { b.lock.<span class="f">unlock</span>(); }
+  }} <span class="k">finally</span> { a.lock.<span class="f">unlock</span>(); }
+}</pre></div>
+
+<h3>Starvation: Nested Submit</h3>
+<div class="cb"><div class="cbh"><span class="fn">The classic trap</span><span class="lt">Java</span></div>
+<pre><span class="t">ExecutorService</span> pool = <span class="t">Executors</span>.<span class="f">newFixedThreadPool</span>(<span class="n">10</span>);
+pool.<span class="f">submit</span>(() -&gt; {
+    pool.<span class="f">submit</span>(() -&gt; <span class="f">audit</span>()).<span class="f">get</span>(); <span class="c">// waits on SAME pool, stuck</span>
+});
+<span class="c">// All 10 threads doing this = deadlock-like starvation</span>
+<span class="c">// FIX: separate pools per concern, or virtual threads</span></pre></div>
+
+<div class="cc g"><div class="cl">Livelock</div><h5>Message queue retry loops</h5>
+<p>Consumer reads message, fails, requeues, reads same message, fails again. 100% CPU, zero progress. <strong>Fix:</strong> exponential backoff + jitter + dead-letter queue after N retries.</p></div>
+
+<div class="cc i"><div class="cl">Prevention Checklist</div><h5>Four rules that prevent most failures</h5>
+<p><strong>1.</strong> Never nest locks without global ordering. <strong>2.</strong> Never submit-and-get on same pool. <strong>3.</strong> Bounded queues + rejection policies. <strong>4.</strong> Separate pools per concern.</p></div>
+`},
+
+m13:{l:"Module 13",t:"Tooling & Production Profiling",d:"JFR, async-profiler, thread dumps, jcstress, deadlock watchdogs, and a production-readiness checklist.",b:`
+<h3>Java Flight Recorder (JFR)</h3>
+<div class="cb"><div class="cbh"><span class="fn">JFR for concurrency</span><span class="lt">CLI</span></div>
+<pre><span class="c"># Record concurrency events</span>
+$ jcmd &lt;pid&gt; JFR.start settings=profile duration=60s filename=out.jfr
+<span class="c"># Key: jdk.JavaMonitorEnter, jdk.ThreadPark,</span>
+<span class="c">#   jdk.JavaMonitorWait, jdk.VirtualThreadPinned</span>
+
+<span class="c"># Always-on production (&lt; 1% overhead)</span>
+$ java -XX:StartFlightRecording=disk=true,maxage=24h,\
+    maxsize=1g,dumponexit=true -jar app.jar</pre></div>
+
+<h3>Thread Dumps</h3>
+<div class="cb"><div class="cbh"><span class="fn">Commands</span><span class="lt">CLI</span></div>
+<pre>$ jcmd &lt;pid&gt; Thread.print             <span class="c"># recommended</span>
+$ jstack -l &lt;pid&gt;                     <span class="c"># with lock info</span>
+$ jcmd &lt;pid&gt; Thread.dump_to_file -format=json t.json <span class="c"># VTs</span>
+<span class="c"># Take 3 dumps, 5s apart. Same state in all 3 = stuck.</span></pre></div>
+
+<h3>Deadlock Watchdog</h3>
+<div class="cb"><div class="cbh"><span class="fn">Programmatic detection</span><span class="lt">Java</span></div>
+<pre><span class="t">ThreadMXBean</span> tmx = <span class="t">ManagementFactory</span>.<span class="f">getThreadMXBean</span>();
+<span class="k">long</span>[] ids = tmx.<span class="f">findDeadlockedThreads</span>(); <span class="c">// monitors + j.u.c locks</span>
+<span class="k">if</span> (ids != <span class="k">null</span>)
+    <span class="k">for</span> (<span class="t">ThreadInfo</span> ti : tmx.<span class="f">getThreadInfo</span>(ids, <span class="k">true</span>, <span class="k">true</span>))
+        log.<span class="f">error</span>(<span class="s">"DEADLOCK: {}"</span>, ti);
+<span class="c">// Schedule every 30s as watchdog</span></pre></div>
+
+<h3>async-profiler</h3>
+<div class="cb"><div class="cbh"><span class="fn">Flame graphs</span><span class="lt">CLI</span></div>
+<pre>$ asprof -e lock -d 30 -f lock.html &lt;pid&gt;  <span class="c"># lock contention</span>
+$ asprof -e wall -d 30 -f wall.html &lt;pid&gt;  <span class="c"># wall-clock (inc. blocked)</span>
+$ asprof -e cpu  -d 30 -f cpu.html  &lt;pid&gt;  <span class="c"># CPU only</span>
+<span class="c"># Compare wall vs CPU: methods in wall but NOT CPU = contention</span></pre></div>
+
+<h3>Tool Matrix</h3>
+<table class="tb"><tr><th>Tool</th><th>Use For</th><th>When</th></tr>
+<tr><td><code>JFR</code></td><td>Lock waits, VT pinning, always-on profiling</td><td>Production</td></tr>
+<tr><td><code>async-profiler</code></td><td>Lock contention flame graphs</td><td>Staging</td></tr>
+<tr><td><code>jstack/jcmd</code></td><td>Thread dumps, deadlocks</td><td>Incidents</td></tr>
+<tr><td><code>ThreadMXBean</code></td><td>Programmatic deadlock detection</td><td>Watchdog</td></tr>
+<tr><td><code>jcstress</code></td><td>JMM compliance of lock-free code</td><td>Dev/CI</td></tr>
+<tr><td><code>JMC</code></td><td>JFR analysis GUI</td><td>Post-mortem</td></tr></table>
+
+<div class="cc p"><div class="cl">Ship Checklist</div><h5>Production readiness</h5>
+<p><strong>1.</strong> Always-on JFR (24h, dump-on-exit). <strong>2.</strong> Deadlock watchdog every 30s. <strong>3.</strong> Pool metrics: active, queue size, rejections. <strong>4.</strong> p50/p95/p99 per endpoint. <strong>5.</strong> Alert on queue &gt; 2x pool for 30s. <strong>6.</strong> Named threads everywhere. <strong>7.</strong> <code>-Djdk.tracePinnedThreads=short</code> in staging.</p></div>
+`}
+};
+
+const mc=document.getElementById('mc');const vis=new Set(['m1']);const tot=Object.keys(M).length;
+function render(){let h='';for(const[id,m]of Object.entries(M)){h+=`<div class="sec${id==='m1'?' act':''}" id="s-${id}"><div class="shd"><div class="ml">${m.l}</div><h2>${m.t}</h2><p class="sd">${m.d}</p></div><div class="ct">${m.b}</div></div>`}mc.innerHTML=h}
+function go(id){document.querySelectorAll('.sec').forEach(s=>s.classList.remove('act'));document.querySelectorAll('.ni').forEach(n=>n.classList.remove('act'));const sec=document.getElementById('s-'+id);if(sec)sec.classList.add('act');const nav=document.querySelector('.ni[data-t="'+id+'"]');if(nav)nav.classList.add('act');vis.add(id);upd();window.scrollTo(0,0)}
+function upd(){const p=Math.round(vis.size/tot*100);document.getElementById('pf').style.width=p+'%';document.getElementById('pt').textContent=vis.size+' / '+tot}
+document.querySelectorAll('.ni').forEach(n=>n.addEventListener('click',e=>{e.preventDefault();go(n.dataset.t)}));
+document.getElementById('si').addEventListener('input',function(){const q=this.value.toLowerCase();document.querySelectorAll('.ni').forEach(n=>{n.style.display=n.textContent.toLowerCase().includes(q)?'':'none'})});
+document.addEventListener('keydown',e=>{if((e.metaKey||e.ctrlKey)&&e.key==='k'){e.preventDefault();document.getElementById('si').focus()}});
+render();upd();
+</script>
+</body>
+</html>
